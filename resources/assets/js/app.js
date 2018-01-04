@@ -150,24 +150,79 @@ function renderRequest(request, path) {
     $("#details").html(content);
 }
 
+// borrowed from bip21, with a modification for optional addresses
+// in urls.
+
+function parseQuery(url) {
+    url = (url || "").split("?");
+    if (url.length < 2) {
+        return {};
+    }
+    var qstr = url[1];
+    var query = {};
+    var a = qstr.split("&");
+    for (var i = 0; i < a.length; i++) {
+        var b = a[i].split("=");
+        query[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || "");
+    }
+    return query;
+}
+
+function decodeBitcoin (uri) {
+    var qregex = /bitcoin:\/?\/?([^?]+)?(\?([^]+))?/.exec(uri);
+    if (!qregex) throw new Error('Invalid BIP21 URI: ' + uri);
+
+    var address = qregex[1];
+    var query = qregex[3];
+
+    var options = parseQuery("?"+query);
+    if (options.amount) {
+        options.amount = Number(options.amount);
+        if (!isFinite(options.amount)) throw new Error('Invalid amount');
+        if (options.amount < 0) throw new Error('Invalid amount');
+    }
+
+    return { address: address, options: options };
+}
+
 $(function () {
     var client = new bip70.HttpClient();
 
     $("#urlform").on("submit", function (e) {
         e.preventDefault();
-        clearBody();
+
         var url = $("#bitcoinurl").val();
-        client
-            .getRequest(url, new RequestValidator({
-                trustStore: TrustStore
-            }))
-            .then(function (requestData) {
-                console.log("loaded request");
-                var paymentRequest = requestData[0];
-                var path = requestData[1];
-                renderRequest(paymentRequest, path);
-            }, function (error) {
-                alert("received error " + error.message);
-            });
+
+        var paymentUrl;
+        if (url.slice(0, 4) === "http") {
+            console.log("looks like HTTP - try directly download request");
+            paymentUrl = url;
+        } else {
+            try {
+                console.log("Looks like bitcoin url")
+                var decoded = decodeBitcoin(url);
+                if (decoded.options.r) {
+                    paymentUrl = decoded.options.r;
+                } else {
+                    alert("Doesn't look like a bip70 URL");
+                }
+            } catch (e) {
+                alert("Invalid URL. Provide direct request URL, or a bip70 bitcoin uri - " + e.message);
+            }
+        }
+
+        if (paymentUrl) {
+            client
+                .getRequest(paymentUrl, new RequestValidator({
+                    trustStore: TrustStore
+                }))
+                .then(function (requestData) {
+                    var paymentRequest = requestData[0];
+                    var path = requestData[1];
+                    renderRequest(paymentRequest, path);
+                }, function (error) {
+                    alert("received error " + error.message);
+                });
+        }
     });
 });
