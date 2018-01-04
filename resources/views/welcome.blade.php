@@ -16,29 +16,48 @@
 <body>
 <div class="container">
     <div class="row">
-        <div class="col-md-2"></div>
         <div class="col-md-8">
-            <div class="row">
-                <form class="form-horizontal" id="urlform">
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="bitcoinurl" name="bitcoinurl" placeholder="Payment URL">
-                        <span class="input-group-btn">
+            <div class="col-md-4"></div>
+            <div class="col-md-8">
+                <div class="row">
+                    <form class="form-horizontal" id="urlform">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="bitcoinurl" name="bitcoinurl" placeholder="Payment URL">
+                            <span class="input-group-btn">
                             <button id="submiturl" class="btn btn-secondary" type="submit">Go!</button>
                         </span>
-                    </div>
-                    <div class="form-group">
-                    </div>
-                </form>
+                        </div>
+                        <div class="form-group">
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-        <div class="col-md-2"></div>
-    </div>
-
-    <div class="row" id="details">
 
     </div>
-
 </div> <!-- /container -->
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="row">
+            <a id="qrurl">
+                <img id="qr" />
+            </a>
+        </div>
+        <div class="row">
+            <div id="qrerror">
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="container">
+            <div class="row" id="details">
+
+            </div>
+        </div>
+
+    </div>
+</div>
 
 <!-- Bootstrap core JavaScript
 ================================================== -->

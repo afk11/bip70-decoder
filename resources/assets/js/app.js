@@ -190,7 +190,8 @@ $(function () {
 
     $("#urlform").on("submit", function (e) {
         e.preventDefault();
-
+        $("#qr").val()
+        $("#qrerror").val()
         var url = $("#bitcoinurl").val();
 
         var paymentUrl;
@@ -220,6 +221,47 @@ $(function () {
                     var paymentRequest = requestData[0];
                     var path = requestData[1];
                     renderRequest(paymentRequest, path);
+
+                    console.log("decode invoice");
+
+                    try {
+                        var details = PaymentDetails.decode(paymentRequest.serializedPaymentDetails);
+                    } catch (e) {
+                        console.log(e.message);
+                        alert(e.message);
+                    }
+
+                    console.log("decoded invoice");
+                    if (details.outputs.length > 1) {
+                        console.log("decoded output");
+
+                        $("#qrerror").val("Unable to generate BIP21 url, this invoice has multiple outputs");
+                    } else if (details.outputs.length === 1) {
+                        console.log("decode output");
+                        try {
+                        var script = Buffer.from(details.outputs[0].script);
+                        console.log("decode script");
+                        var amount = details.outputs[0].amount;
+                        console.log("decode amount");
+                            var address = null;
+                            console.log("decode address");
+                            address = baddress.fromOutputScript(script);
+                        } catch (e) {
+                            console.log("addresserror");
+                            $("#qrerror").val("No address type for this script, cannot generate QR or bip21 link");
+                        }
+
+                        var bitcoinUri = "bitcoin:" + address + "?amount=" + (parseInt(amount, 10) / 1e8);
+                        $("a").attr("href", bitcoinUri)
+
+                        console.log("bitcoinURI", bitcoinUri);
+                        var qr = new QRious({
+                            element: document.getElementById('qr'),
+                            value: bitcoinUri,
+                            size: 300
+                        });
+                    }
+
                 }, function (error) {
                     alert("received error " + error.message);
                 });

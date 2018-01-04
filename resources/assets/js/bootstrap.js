@@ -13,6 +13,7 @@ try {
     require('bootstrap-sass');
 } catch (e) {}
 
+window.QRious = require('qrious');
 window.bitcoinjs = require('bitcoinjs-lib');
 window.bitcoinOps = require('bitcoin-ops');
 window.bip70 = require('bip70-js');
